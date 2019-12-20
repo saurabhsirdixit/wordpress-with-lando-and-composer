@@ -1,0 +1,32 @@
+name: wp
+recipe: wordpress
+config:
+  env: dev
+  xdebug: true
+  php: '7.3'
+  webroot: wordpress
+proxy:
+  mailhog:
+    - mail.wp.lndo.site
+  pma:
+    - pma.wp.lndo.site
+services:
+  appserver:
+    composer:
+      phpunit/phpunit: '*'
+    build:
+      - cd $LANDO_MOUNT && composer update --prefer-source
+      - bash ./scripts/post-build.sh
+    post-start:
+      - cd $LANDO_MOUNT && composer update --prefer-source
+      - bash ./scripts/post-start.sh
+  mailhog:
+    type: mailhog
+    hogfrom:
+      - appserver
+    portforward: true
+  pma:
+    type: phpmyadmin
+    hosts:
+      - database
+      - database.wp.internal
